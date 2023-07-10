@@ -1,0 +1,48 @@
+files: !!set {}
+directories: !!set {}
+part-properties:
+  plugin: bundle
+  source: /home/ubuntu/github/bundle-kubeflow/releases/1.7/edge/kubeflow
+  source-checksum: ''
+  source-branch: ''
+  source-commit: ''
+  source-depth: 0
+  source-subdir: ''
+  source-submodules: null
+  source-tag: ''
+  source-type: ''
+  disable-parallel: false
+  after: []
+  overlay-packages: []
+  stage-snaps: []
+  stage-packages: []
+  build-snaps: []
+  build-packages: []
+  build-environment: []
+  build-attributes: []
+  organize: {}
+  overlay:
+  - '*'
+  stage:
+  - '*'
+  prime:
+  - bundle.yaml
+  - README.md
+  override-pull: null
+  overlay-script: null
+  override-build: null
+  override-stage: null
+  override-prime: null
+  permissions: []
+project-options:
+  application_name: charmcraft
+  arch_triplet: x86_64-linux-gnu
+  target_arch: amd64
+  project_vars_part_name: null
+  project_vars: {}
+assets:
+  stage-packages: null
+  stage-snaps: null
+  source-details: null
+outdated-files: null
+outdated-dirs: null
