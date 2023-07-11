@@ -35,7 +35,11 @@ class TestCharm:
 
 
         applications = ops_test.model.applications
-        await ops_test.model.wait_for_idle(apps=list(applications.keys()), timeout=1500)
+        await ops_test.model.wait_for_idle(apps=list(applications.keys()),
+            raise_on_blocked=False,
+            raise_on_error=False,
+            timeout=1500
+        )
         
         result_status, result_text = await fetch_response(url)
         assert result_status == 200

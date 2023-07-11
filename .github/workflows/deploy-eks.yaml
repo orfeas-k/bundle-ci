@@ -71,7 +71,7 @@ jobs:
       - name: Delete EKS cluster
         if: always()
         run: |
-          eksctl delete cluster --name=kubeflow-test
+          eksctl delete cluster --region eu-central-1 --name=kubeflow-test
 
       - name: Delete unattached volumes
         if: always()
