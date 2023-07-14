@@ -98,4 +98,4 @@ jobs:
     uses: ./.github/workflows/delete-aws-volumes.yaml
     secrets: inherit
     with:
-      region: eu-central-1
+      region: 'eu-central-1'
