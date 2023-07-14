@@ -93,8 +93,7 @@ jobs:
         run: kubectl -n kubeflow get pods | tail -n +2 | grep CrashLoopBackOff | awk '{print $1}' | xargs -n1 kubectl -n kubeflow logs --all-containers=true --tail 100
         if: failure()
 
-  delete-volumes:
-    name: Delete unattached volumes
+  delete-unattached-volumes:
     if: always()
     uses: ./.github/workflows/delete-aws-volumes.yaml
     secrets: inherit
