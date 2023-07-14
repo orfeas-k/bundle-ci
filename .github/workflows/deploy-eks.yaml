@@ -67,6 +67,8 @@ jobs:
       #   if: always()
       #   run: |
       #     eksctl delete cluster --region eu-central-1 --name=kubeflow-test
+      - name: Try to fail
+        run: exit 1
 
       # On failure, capture debugging resources
       - name: Get juju status
