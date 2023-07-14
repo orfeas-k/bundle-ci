@@ -22,6 +22,7 @@ on:
         description: 'Insert the AWS Region name in which the script will delete unattached volumes. Running it with an empty region means that it will delete unattached volumes in the ALL available regions.'
         required: false
         default: ''
+        type: string
 
 jobs:
   delete-volumes:
