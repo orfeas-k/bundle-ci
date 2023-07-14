@@ -3,11 +3,9 @@
 import boto3
 from tenacity import retry, stop_after_attempt, wait_fixed
 import sys
-count = 0
 
 @retry(stop=stop_after_attempt(3), wait=wait_fixed(2), reraise=True)
-def delete_volumes_in_region(region_name: str)-> None:
-    print(f'running in region {region_name}')
+def delete_volumes_in_region(region_name: str, count: int)-> int:
     try:
         ec2conn = boto3.resource("ec2", region_name = region_name)
         unattached_volumes = [
@@ -16,7 +14,8 @@ def delete_volumes_in_region(region_name: str)-> None:
         for volume in unattached_volumes:
             volume.delete()
             print(f"Deleted unattached volume {volume.id} in region {region_name}.")
-            count += 1
+            count = count + 1
+        return count
     except Exception as e:
         print(f"Error: {e}")
         raise e
@@ -28,17 +27,19 @@ def validate_region(region_name: str)-> bool:
     return region_name in regions_names
 
 def delete_volumes() -> None:
+    count = 0
     if len(sys.argv)>1:
         region_name = sys.argv[1]
         if validate_region(region_name):
-            delete_volumes_in_region(region_name)
+            count = delete_volumes_in_region(region_name, count)
         else:
             print("Region from input isn't being used in this AWS account.")
+            raise Exception
     else:
         ec2 = boto3.client("ec2")
         for region in ec2.describe_regions()["Regions"]:
             region_name = region["RegionName"]
-            delete_volumes_in_region(region_name)
+            count = delete_volumes_in_region(region_name, count)
 
     if count > 0:
         print(f"Deleted {count} unattached volumes.")

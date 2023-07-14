@@ -8,9 +8,23 @@ on:
         required: true
     inputs:
       region:
-        description: 'AWS Region name in which the script will delete unattached volumes. By default, it will delete volumes in the "eu-central-1" region. If you would like it to delete unattached volumes in all available regions, then you can insert empty string  true/false whether to run action in dry-run mode'
+        description: 'Insert the AWS Region name in which the script will delete unattached volumes. Running it with an empty region means that it will delete unattached volumes in the ALL available regions.'
+        required: false
+        default: ''
+        type: string
+  workflow_call:
+    secrets:
+      BUNDLE_KUBEFLOW_EKS_AWS_ACCESS_KEY_ID:
         required: true
-        default: 'eu-central-1'
+      BUNDLE_KUBEFLOW_EKS_AWS_SECRET_ACCESS_KEY:
+        required: true
+    inputs:
+      region:
+        description: 'Insert the AWS Region name in which the script will delete unattached volumes. Running it with an empty region means that it will delete unattached volumes in the ALL available regions.'
+        required: false
+        default: ''
+        type: string
+
 jobs:
   delete-volumes:
     runs-on: ubuntu-22.04
