@@ -4,9 +4,6 @@ name: Run Azure Login with OIDC
 on: 
   workflow_dispatch:
 
-  schedule:
-    - cron: "15 * * * *"
-
 permissions:
       id-token: write
       contents: read
