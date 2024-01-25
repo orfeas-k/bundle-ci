@@ -24,7 +24,7 @@ jobs:
       - name: print input
         run: |
             version=${{ matrix.bundle_version }}
-            name="kf${VERSION//.}"
+            name="kf${version//.}"
             echo "name=${name}" >> $GITHUB_ENV
 
 
@@ -52,7 +52,7 @@ jobs:
       #     # We need to remove the dot from version
       #     # due to cluster naming restrictions
       #     version=${{ matrix.bundle_version }}
-      #     name="kf${VERSION//.}"
+      #     name="kf${version//.}"
       #     echo "name=${name}" >> $GITHUB_ENV
       #     az group create --name ${name}ResourceGroup --location westeurope
       #     az aks create \
