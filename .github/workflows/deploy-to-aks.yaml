@@ -24,7 +24,7 @@ jobs:
       - name: print input
         run: |
             version=${{ matrix.bundle_version }}
-            name=kf${VERSION//.}
+            name="kf""${VERSION//.}"
             echo name=${name}
             echo ${name} >> $GITHUB_ENV
 
