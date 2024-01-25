@@ -24,15 +24,13 @@ jobs:
       - name: print input
         run: |
             version=${{ matrix.bundle_version }}
-            name="kf""${VERSION//.}"
-            echo name=${name}
+            name="kf${VERSION//.}"
             echo "name=${name}" >> $GITHUB_ENV
 
 
       - name: next step access
         run: |
           echo name = ${name}
-          echo name = ${{ env.name }}
 
       # - name: Checkout repository
       #   uses: actions/checkout@v2
@@ -55,6 +53,7 @@ jobs:
       #     # due to cluster naming restrictions
       #     version=${{ matrix.bundle_version }}
       #     name="kf${VERSION//.}"
+      #     echo "name=${name}" >> $GITHUB_ENV
       #     az group create --name ${name}ResourceGroup --location westeurope
       #     az aks create \
       #       --resource-group ${name}ResourceGroup \
