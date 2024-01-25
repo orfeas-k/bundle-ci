@@ -1,4 +1,4 @@
-name: Create EKS cluster, deploy CKF and run bundle test
+name: Create AKS cluster, deploy CKF and run bundle test
 on:
   workflow_dispatch:
     inputs:
@@ -21,7 +21,13 @@ jobs:
       JUJU_VERSION: 3.1
     steps:
       - name: print input
-        run: echo ${{ matrix.bundle_version }}
+        run: |
+          echo ${{ matrix.bundle_version }}
+          VERSION=${{ matrix.bundle_version }}
+          VERSION_WITHOUT_DOT="${VERSION//.}"
+          echo VERSION WITHOUT DOT = $VERSION_WITHOUT_DOT
+          echo ${${{ matrix.bundle_version }}//.}
+
       # - name: Checkout repository
       #   uses: actions/checkout@v2
 
@@ -42,6 +48,12 @@ jobs:
 
       # - name: Create cluster
       #   run: |
+      #     VERSION=${{ matrix.bundle_version }}
+      #     VERSION_WITHOUT_DOT="${VERSION//.}"
+      #     echo $VERSION_WITHOUT_DOT
+      #     az group create --name kf${VERSION_WITHOUT_DOT}ResourceGroup --location westeurope
+
+
 
       # - name: Setup juju
       #   run: |
