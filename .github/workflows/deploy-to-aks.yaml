@@ -3,30 +3,34 @@ on:
   workflow_dispatch:
     inputs:
       bundle_version:
-        description: 'Comma-separated list of Bundle versions e.g. "1.7","1.8"'
-        default: '"1.7"'
+        description: 'Comma-separated list of bundle versions e.g. "1.7","1.8"'
+        default: '"1.8"'
         required: true
 
   schedule:
-    - cron: "34 * * * *"
-    # - cron: "23 0 * * 2"
+    - cron: "23 0 * * 2"
 jobs:
   deploy-ckf-to-aks:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
         bundle_version: ${{ fromJSON(format('[{0}]', inputs.bundle_version || '"1.7","1.8"')) }}
-    
+      fail-fast: false
     env:
+      AZURE_CORE_OUTPUT: none
       JUJU_VERSION: 3.1
+      K8S_VERSION: 1.26
     steps:
       - name: print input
         run: |
-          echo ${{ matrix.bundle_version }}
-          VERSION=${{ matrix.bundle_version }}
-          VERSION_WITHOUT_DOT="${VERSION//.}"
-          echo VERSION WITHOUT DOT = $VERSION_WITHOUT_DOT
-          echo ${${{ matrix.bundle_version }}//.}
+            version=${{ matrix.bundle_version }}
+            name="kf${VERSION//.}"
+            echo name=${name}
+
+      - name: next step access
+        run: |
+          echo name = ${name}
+          echo name = ${{ env.name }}
 
       # - name: Checkout repository
       #   uses: actions/checkout@v2
@@ -39,31 +43,38 @@ jobs:
       #     sudo snap install charmcraft --classic
       #     juju version
 
-      # - name: Azure login
-      #   uses: azure/login@v1
+      # - uses: azure/login@v1
       #   with:
-      #     client-id: ${{ secrets.AZURE_CLIENT_ID }}
-      #     tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-      #     subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # - name: Create cluster
+      # - name: Create resource group and cluster
       #   run: |
-      #     VERSION=${{ matrix.bundle_version }}
-      #     VERSION_WITHOUT_DOT="${VERSION//.}"
-      #     echo $VERSION_WITHOUT_DOT
-      #     az group create --name kf${VERSION_WITHOUT_DOT}ResourceGroup --location westeurope
-
-
+      #     # We need to remove the dot from version
+      #     # due to cluster naming restrictions
+      #     version=${{ matrix.bundle_version }}
+      #     name="kf${VERSION//.}"
+      #     az group create --name ${name}ResourceGroup --location westeurope
+      #     az aks create \
+      #       --resource-group ${name}ResourceGroup \
+      #       --name ${name}AKSCluster \
+      #       --kubernetes-version ${{ env.K8S_VERSION }} \
+      #       --node-count 2 \
+      #       --node-vm-size Standard_DS2_v2 \ # Standard_D8s_v3
+      #       --node-osdisk-size 100 \
+      #       --node-osdisk-type Managed \
+      #       --os-sku Ubuntu \
+      #       --no-ssh-key
 
       # - name: Setup juju
       #   run: |
+      #     az aks get-credentials --resource-group ${name}ResourceGroup --name ${name}AKSCluster --admin
       #     juju add-k8s aks --client
       #     juju bootstrap aks aks-controller
       #     juju add-model kubeflow
-      
+
       # - name: Test bundle deployment
       #   run: |
-      #     tox -vve test_bundle_deployment- -- --model kubeflow --keep-models -vv -s
+      #     tox -vve test_bundle_deployment-${{ matrix.bundle_version }} -- --model kubeflow --keep-models -vv -s
 
       # # On failure, capture debugging resources
       # - name: Get juju status
@@ -92,5 +103,4 @@ jobs:
 
       # - name: Delete AKS cluster
       #   if: always()
-      #   run: |
-      #     # eksctl delete cluster --region eu-central-1 --name=kubeflow-test
+      #   run: az group delete --name ${name}RG --yes 
