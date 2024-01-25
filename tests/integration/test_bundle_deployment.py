@@ -1,5 +1,6 @@
 import subprocess
 import json
+import os
 
 import aiohttp
 import lightkube
@@ -8,7 +9,6 @@ import requests
 from pytest_operator.plugin import OpsTest
 from lightkube.resources.core_v1 import Service
 
-BUNDLE_PATH = "./releases/1.7/edge/kubeflow/bundle.yaml"
 BUNDLE_NAME = "kubeflow"
 
 @pytest.fixture()
@@ -16,10 +16,14 @@ def lightkube_client() -> lightkube.Client:
     client = lightkube.Client(field_manager=BUNDLE_NAME)
     return client
 
+@pytest.fixture
+def bundle_path() -> str:
+    return os.environ.get("BUNDLE_PATH").replace("\"", "")
+
 class TestCharm:
     @pytest.mark.abort_on_fail
-    async def test_bundle_deployment_works(self, ops_test: OpsTest, lightkube_client):
-        subprocess.Popen(["juju", "deploy", f"{BUNDLE_PATH}", "--trust"])
+    async def test_bundle_deployment_works(self, ops_test: OpsTest, lightkube_client, bundle_path):
+        subprocess.Popen(["juju", "deploy", bundle_path, "--trust"])
 
         await ops_test.model.wait_for_idle(
             apps=["istio-ingressgateway"],
@@ -61,7 +65,8 @@ def get_public_url(lightkube_client: lightkube.Client, bundle_name: str):
     ingressgateway_svc = lightkube_client.get(
         Service, "istio-ingressgateway-workload", namespace=bundle_name
     )
-    public_url = f"http://{ingressgateway_svc.status.loadBalancer.ingress[0].hostname}"
+    address = ingressgateway_svc.status.loadBalancer.ingress[0].hostname or ingressgateway_svc.status.loadBalancer.ingress[0].ip
+    public_url = f"http://{address}"
     return public_url
 
 async def fetch_response(url, headers=None):
