@@ -58,7 +58,7 @@ jobs:
 
       - name: Add AKS cloud to juju and bootstrap controller
         run: |
-          az aks get-credentials --resource-group ${NAME}ResourceGroup --name ${NAME}AKSCluster --admin
+          az aks get-credentials --resource-group ${{ env.NAME }}ResourceGroup --name ${{ env.NAME }}AKSCluster --admin
           juju add-k8s aks --client
           juju bootstrap aks aks-controller
           juju add-model kubeflow
@@ -94,4 +94,4 @@ jobs:
 
       - name: Delete AKS resources
         if: always()
-        run: az group delete --name ${NAME}ResourceGroup --yes
+        run: az group delete --name ${{ env.NAME }}ResourceGroup --yes
