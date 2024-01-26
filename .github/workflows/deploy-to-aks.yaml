@@ -44,12 +44,13 @@ jobs:
           name="kf${version//.}"
           echo "name=${name}" >> $GITHUB_ENV
           az group create --name ${name}ResourceGroup --location westeurope
+          # Standard_D8s_v3
           az aks create \
             --resource-group ${name}ResourceGroup \
             --name ${name}AKSCluster \
             --kubernetes-version ${{ env.K8S_VERSION }} \
             --node-count 2 \
-            --node-vm-size Standard_DS2_v2 \ # Standard_D8s_v3
+            --node-vm-size Standard_DS2_v2 \
             --node-osdisk-size 100 \
             --node-osdisk-type Managed \
             --os-sku Ubuntu \
