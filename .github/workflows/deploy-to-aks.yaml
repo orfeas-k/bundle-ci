@@ -25,8 +25,6 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Install CLI tools tox charmcraft juju
-        env:
-          JUJU_VERSION: 
         run: |
           python -m pip install --upgrade pip
           pip install tox
@@ -39,8 +37,6 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Create resource group and cluster
-        env:
-          K8S_VERSION: if [[ "$BUNDLE_VERSION" == "1.7" ]]
         run: |
           # We need to remove the dot from version
           # due to cluster naming restrictions
