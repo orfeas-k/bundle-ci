@@ -18,80 +18,89 @@ jobs:
       fail-fast: false
     env:
       AZURE_CORE_OUTPUT: none
-      JUJU_VERSION: 3.1
-      K8S_VERSION: 1.26
+      K8S_VERSION: fromJSON('{"1.7":"1.24","1.8":"1.26"}')[runner.os]
+      JUJU_VERSION: fromJSON('{"1.7":"2.9","1.8":"3.1"}')[runner.os]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Install CLI tools tox charmcraft juju
-        run: |
-          python -m pip install --upgrade pip
-          pip install tox
-          sudo snap install juju --classic --channel=${{ env.JUJU_VERSION }}/stable
-          sudo snap install charmcraft --classic
-          juju version
+      - name: prin k8s version
+        run: echo ${{ env.K8S_VERSION }} ${{ env.JUJU_VERSION }}
 
-      - uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Create resource group and cluster
-        run: |
-          # We need to remove the dot from version
-          # due to cluster naming restrictions
-          version=${{ matrix.bundle_version }}
-          name="kf${version//.}"
-          echo "name=${name}" >> $GITHUB_ENV
-          az group create --name ${name}ResourceGroup --location westeurope
-          # Standard_D8s_v3
-          az aks create \
-            --resource-group ${name}ResourceGroup \
-            --name ${name}AKSCluster \
-            --kubernetes-version ${{ env.K8S_VERSION }} \
-            --node-count 2 \
-            --node-vm-size Standard_DS2_v2 \
-            --node-osdisk-size 100 \
-            --node-osdisk-type Managed \
-            --os-sku Ubuntu \
-            --no-ssh-key
 
-      - name: Setup juju
-        run: |
-          az aks get-credentials --resource-group ${name}ResourceGroup --name ${name}AKSCluster --admin
-          juju add-k8s aks --client
-          juju bootstrap aks aks-controller
-          juju add-model kubeflow
+      # - name: Install CLI tools tox charmcraft juju
+      #   env:
+      #     JUJU_VERSION: 
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     pip install tox
+      #     sudo snap install juju --classic --channel=${{ env.JUJU_VERSION }}/stable
+      #     sudo snap install charmcraft --classic
+      #     juju version
 
-      - name: Test bundle deployment
-        run: |
-          tox -vve test_bundle_deployment-${{ matrix.bundle_version }} -- --model kubeflow --keep-models -vv -s
+      # - uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # On failure, capture debugging resources
-      - name: Get juju status
-        run: juju status
-        if: failure()
+      # - name: Create resource group and cluster
+      #   env:
+      #     K8S_VERSION: if [[ "$BUNDLE_VERSION" == "1.7" ]]
+      #   run: |
+      #     # We need to remove the dot from version
+      #     # due to cluster naming restrictions
+      #     version=${{ matrix.bundle_version }}
+      #     NAME="kf${version//.}"
+      #     echo "NAME=${NAME}" >> $GITHUB_ENV
+      #     az group create --name ${NAME}ResourceGroup --location westeurope
+      #     # Standard_D8s_v3
+      #     az aks create \
+      #       --resource-group ${NAME}ResourceGroup \
+      #       --name ${NAME}AKSCluster \
+      #       --kubernetes-version ${{ env.K8S_VERSION }} \
+      #       --node-count 2 \
+      #       --node-vm-size Standard_DS2_v2 \
+      #       --node-osdisk-size 100 \
+      #       --node-osdisk-type Managed \
+      #       --os-sku Ubuntu \
+      #       --no-ssh-key
 
-      - name: Get juju debug logs
-        run: juju debug-log --replay --no-tail
-        if: failure()
+      # - name: Add AKS cloud to juju and bootstrap controller
+      #   run: |
+      #     az aks get-credentials --resource-group ${NAME}ResourceGroup --name ${NAME}AKSCluster --admin
+      #     juju add-k8s aks --client
+      #     juju bootstrap aks aks-controller
+      #     juju add-model kubeflow
 
-      - name: Get all kubernetes resources
-        run: kubectl get all -A
-        if: failure()
+      # - name: Test bundle deployment
+      #   run: |
+      #     tox -vve test_bundle_deployment-${{ matrix.bundle_version }} -- --model kubeflow --keep-models -vv -s
 
-      - name: Get logs from pods with status = Pending
-        run: kubectl -n kubeflow get pods | tail -n +2 | grep Pending | awk '{print $1}' | xargs -n1 kubectl -n kubeflow logs --all-containers=true --tail 100
-        if: failure()
+      # # On failure, capture debugging resources
+      # - name: Get juju status
+      #   run: juju status
+      #   if: failure()
 
-      - name: Get logs from pods with status = Failed
-        run: kubectl -n kubeflow get pods | tail -n +2 | grep Failed | awk '{print $1}' | xargs -n1 kubectl -n kubeflow logs --all-containers=true --tail 100
-        if: failure()
+      # - name: Get juju debug logs
+      #   run: juju debug-log --replay --no-tail
+      #   if: failure()
 
-      - name: Get logs from pods with status = CrashLoopBackOff
-        run: kubectl -n kubeflow get pods | tail -n +2 | grep CrashLoopBackOff | awk '{print $1}' | xargs -n1 kubectl -n kubeflow logs --all-containers=true --tail 100
-        if: failure()
+      # - name: Get all kubernetes resources
+      #   run: kubectl get all -A
+      #   if: failure()
 
-      - name: Delete AKS cluster
-        if: always()
-        run: az group delete --name ${name}ResourceGroup --yes 
+      # - name: Get logs from pods with status = Pending
+      #   run: kubectl -n kubeflow get pods | tail -n +2 | grep Pending | awk '{print $1}' | xargs -n1 kubectl -n kubeflow logs --all-containers=true --tail 100
+      #   if: failure()
+
+      # - name: Get logs from pods with status = Failed
+      #   run: kubectl -n kubeflow get pods | tail -n +2 | grep Failed | awk '{print $1}' | xargs -n1 kubectl -n kubeflow logs --all-containers=true --tail 100
+      #   if: failure()
+
+      # - name: Get logs from pods with status = CrashLoopBackOff
+      #   run: kubectl -n kubeflow get pods | tail -n +2 | grep CrashLoopBackOff | awk '{print $1}' | xargs -n1 kubectl -n kubeflow logs --all-containers=true --tail 100
+      #   if: failure()
+
+      # - name: Delete AKS resources
+      #   if: always()
+      #   run: az group delete --name ${NAME}ResourceGroup --yes
