@@ -18,8 +18,8 @@ jobs:
       fail-fast: false
     env:
       AZURE_CORE_OUTPUT: none
-      K8S_VERSION: fromJSON('{"1.7":"1.24","1.8":"1.26"}')[runner.os]
-      JUJU_VERSION: fromJSON('{"1.7":"2.9","1.8":"3.1"}')[runner.os]
+      K8S_VERSION: ${{ fromJSON('{"1.7":"1.24","1.8":"1.26"}')[matrix.bundle_version] }}
+      JUJU_VERSION: ${{ fromJSON('{"1.7":"2.9","1.8":"3.1"}')[ matrix.bundle_version ] }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
