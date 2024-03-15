@@ -96,7 +96,7 @@ jobs:
 
       - name: Delete AKS cluster
         if: always()
-        run: az group delete --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.NAME }} --yes
+        run: az aks delete --resource-group ${{ env.RESOURCE_GROUP }} --name ${{ env.NAME }} --yes
 
       - name: Delete AKS resource group
         if: always()
