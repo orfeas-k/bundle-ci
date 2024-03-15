@@ -7,8 +7,8 @@ on:
         default: '"1.8"'
         required: true
 
-  schedule:
-    - cron: "17 0 * * 2"
+  # schedule:
+  #   - cron: "17 0 * * 2"
 jobs:
   deploy-ckf-to-aks:
     runs-on: ubuntu-22.04
